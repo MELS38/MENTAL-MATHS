@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>CALC RUSH — Somme des Chiffres (10 séries)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root{
+      --bg1:#0b1020; --bg2:#0a0f1e; --glass:#0f172ab3;
+      --accent:#22d3ee; --accent2:#a78bfa; --accent3:#34d399;
+      --ok:#10b981; --err:#ef4444; --ink:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(1400px 800px at 15% -10%, #22d3ee26 0%, transparent 60%),
+        radial-gradient(1000px 700px at 85% 0%, #a78bfa26 0%, transparent 60%),
+        linear-gradient(160deg,var(--bg1),var(--bg2));
+      display:flex;align-items:center;justify-content:center; padding:24px;
+    }
+
+    .app{
+      width:min(980px,96vw); position:relative;
+      border-radius:28px; overflow:hidden;
+      background: linear-gradient(180deg,var(--glass),#0b1220aa);
+      backdrop-filter: blur(12px);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow: 0 40px 100px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.05),transparent)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 120deg,var(--accent),var(--accent2),var(--accent3),var(--accent));box-shadow:0 0 30px #22d3ee66}
+    .title{font-weight:900;letter-spacing:.3px}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(34,211,238,.15);color:#a5f3fc;border:1px solid rgba(34,211,238,.35)}
+
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding:22px}
+    @media (max-width:860px){.grid{grid-template-columns:1fr}}
+
+    .screen{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:24px;background:radial-gradient(600px 240px at 50% 0%,rgba(34,211,238,.10),transparent 60%)}
+
+    .digit{font-size:108px;font-weight:900;line-height:1;text-shadow:0 12px 60px rgba(34,211,238,.35),0 0 30px rgba(167,139,250,.25);filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));}
+    .glow{animation:glow 1.2s ease-in-out infinite alternate}
+    @keyframes glow{from{transform:translateY(2px)}to{transform:translateY(0)} }
+    .flip{animation:flip .45s ease}
+    @keyframes flip{0%{opacity:0;transform:translateY(12px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
+    .progress{position:absolute;bottom:14px;left:24px;right:24px;height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s}
+
+    .panel{border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+    .panel h3{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:.18em;color:#cbd5e1}
+
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}
+    .row label{font-size:14px;color:#cbd5e1}
+    .row .value{font-variant-numeric:tabular-nums;color:#e2e8f0;font-weight:700}
+
+    input[type="range"]{width:100%}
+    input[type="number"],input[type="text"]{width:100%;background:#0b1220;border:1px solid rgba(255,255,255,.1);color:#e5e7eb;border-radius:12px;padding:10px 12px}
+
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .btn{appearance:none;border:1px solid rgba(255,255,255,.12);color:#0b1220;background:linear-gradient(180deg,#22d3ee,#06b6d4);padding:12px 16px;border-radius:12px;font-weight:900;letter-spacing:.3px;cursor:pointer;box-shadow:0 12px 36px rgba(34,211,238,.28);transition:transform .08s ease,filter .2s ease}
+    .btn:hover{filter:brightness(1.06)}.btn:active{transform:translateY(1px)}
+    .btn.secondary{background:linear-gradient(180deg,#94a3b8,#64748b);color:#0b1220}
+    .btn.ghost{background:transparent;color:#e2e8f0;border-color:rgba(255,255,255,.18)}
+
+    .presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);cursor:pointer;background:rgba(255,255,255,.04)}
+
+    .answer{display:flex;gap:10px;align-items:center;margin-top:12px}
+    .answer input{flex:1}
+
+    .result{margin-top:10px;font-weight:800}
+    .ok{color:var(--ok)} .err{color:var(--err)}
+    .muted{color:#94a3b8}.small{font-size:12px}
+
+    /* Overlay de compte à rebours */
+    .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,.6),rgba(2,6,23,.35));backdrop-filter:blur(2px)}
+    .overlay.show{display:flex}
+    .count{font-size:84px;font-weight:900;text-shadow:0 8px 40px rgba(34,211,238,.35)}
+
+    /* Canvas confetti */
+    #fx{position:absolute;inset:0;pointer-events:none}
+
+    /* Tooltip mini */
+    .tip{font-size:11px;color:#a3a3a3}
+
+    /* Record badge */
+    .record{display:none;margin-top:6px;font-size:12px;color:#fde68a}
+    .record.show{display:block}
+
+    /* Historique */
+    .history{margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
+    .history h4{margin:6px 0 8px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#cbd5e1}
+    .history-list{display:grid;gap:8px;max-height:200px;overflow:auto}
+    .history-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.04)}
+    .spark{width:100%;height:40px}
+  </style>
+<link href="./manifest.webmanifest" rel="manifest"/><meta content="yes" name="apple-mobile-web-app-capable"/><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/><meta content="#0b1020" name="theme-color"/><link href="/icons/icon-192.png" rel="apple-touch-icon" sizes="180x180"/><style id="ios-fixes">
+/* === iPhone responsive & safe-area fixes === */
+html, body { margin:0; padding:0; min-height: 100svh; background:#0b1020; -webkit-text-size-adjust:100%; }
+body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+* { box-sizing: border-box; }
+input, select, textarea { font-size: 16px; } /* évite le zoom iOS à la saisie */
+button { min-height: 44px; }
+.container, .app, .wrapper { max-width: 460px; margin: 0 auto; padding: clamp(12px,4vw,24px); }
+h1, .title { font-size: clamp(28px, 7vw, 48px); line-height: 1.1; }
+.controls, .buttons { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px){
+  .controls, .buttons { grid-template-columns: 1fr; }
+}
+.range, input[type=range] { width: 100%; }
+input[type=number], input[type=text] { width: 100%; min-height: 44px; }
+:root { color-scheme: dark; } /* pour clavier sombre */
+</style></head>
+<body>
+<main aria-label="Jeu de calcul mental" class="app" role="application">
+<canvas id="fx"></canvas>
+<div class="header">
+<div class="brand">
+<div aria-hidden="true" class="logo"></div>
+<div>
+<div class="title">CALC RUSH</div>
+<div class="tip">Somme les chiffres. Pas d'excuses.</div>
+</div>
+</div>
+<div>
+<span class="badge" id="bestBadge">Record perso : —</span>
+</div>
+</div>
+<div class="grid">
+<!-- Écran principal -->
+<section aria-live="polite" class="screen">
+<div class="digit glow" id="digit">Prêt ?</div>
+<div aria-hidden="true" class="progress"><div class="bar" id="bar"></div></div>
+<div class="overlay" id="overlay"><div class="count" id="count">3</div></div>
+</section>
+<!-- Panneau de contrôle -->
+<aside class="panel">
+<h3>Paramètres</h3>
+<div class="row">
+<label for="length">Nombre de chiffres</label>
+<div class="value"><span id="lengthVal">10</span></div>
+</div>
+<input id="length" max="60" min="1" type="range" value="10"/>
+<div class="row">
+<label for="speed">Vitesse (ms / chiffre)</label>
+<div class="value"><span id="speedVal">800</span></div>
+</div>
+<input id="speed" max="2000" min="120" step="40" type="range" value="800"/>
+<div class="presets">
+<button class="chip" data-speed="1200">Chill</button>
+<button class="chip" data-speed="800">Normal</button>
+<button class="chip" data-speed="500">Rapide</button>
+<button class="chip" data-speed="300">Turbo</button>
+</div>
+<div class="row">
+<label for="allowZero">Inclure 0</label>
+<input checked="" id="allowZero" type="checkbox"/>
+</div>
+<div class="row">
+<label for="sfx">Sons &amp; vibrations</label>
+<input checked="" id="sfx" type="checkbox"/>
+</div>
+<div class="row small muted">
+<span><strong>Partie</strong> : 10 séries • Score : <strong id="scoreNow">0</strong>/10</span>
+</div>
+<div class="actions">
+<button class="btn" id="start" title="Espace pour démarrer">Démarrer la partie</button>
+<button class="btn secondary" disabled="" id="next" title="Série suivante">Suivante</button>
+<button class="btn ghost" id="reset" title="Arrêter / réinitialiser">Reset</button>
+<button class="btn secondary" id="replay" title="Rejouer la même config">Rejouer</button>
+</div>
+<div class="answer">
+<input aria-label="Réponse" id="answer" inputmode="numeric" placeholder="Entre la somme ici (Entrée pour valider)" type="number"/>
+<button class="btn secondary" id="validate">Valider</button>
+</div>
+<div class="row small muted">
+<span>Raccourcis : <strong>Espace</strong> démarrer/suivante • <strong>Entrée</strong> valider • <strong>Échap</strong> reset</span>
+</div>
+<div class="small muted" id="stats">Temps : — • Série : —</div>
+<div class="record" id="record">🔥 Nouveau record perso !</div>
+<div class="result" id="result"></div>
+<div class="history">
+<h4>Historique des parties</h4>
+<canvas aria-label="Tendance de score (0–10)" class="spark" id="spark"></canvas>
+<div class="history-list" id="historyList"></div>
+</div>
+</aside>
+</div>
+</main>
+<script>
+    // ===== Elements =====
+    const fx = document.getElementById('fx'); const ctx = fx.getContext('2d');
+    const digitEl = document.getElementById('digit');
+    const barEl = document.getElementById('bar');
+    const lengthRange = document.getElementById('length'); const lengthVal = document.getElementById('lengthVal');
+    const speedRange = document.getElementById('speed'); const speedVal = document.getElementById('speedVal');
+    const allowZero = document.getElementById('allowZero'); const sfxToggle = document.getElementById('sfx');
+    const startBtn = document.getElementById('start'); const resetBtn = document.getElementById('reset'); const replayBtn = document.getElementById('replay');
+    const nextBtn = document.getElementById('next');
+    const answerInput = document.getElementById('answer'); const validateBtn = document.getElementById('validate');
+    const resultDiv = document.getElementById('result'); const statsDiv = document.getElementById('stats');
+    const overlay = document.getElementById('overlay'); const countEl = document.getElementById('count');
+    const bestBadge = document.getElementById('bestBadge'); const recordFlag = document.getElementById('record');
+    const scoreNow = document.getElementById('scoreNow');
+    const spark = document.getElementById('spark'); const sparkCtx = spark.getContext('2d');
+    const histList = document.getElementById('historyList');
+
+    // ===== State =====
+    let sequence = []; let i = 0; let timer = null; let startedAt = 0; let showing = false; let lastConfig = {len:10,speed:800,zero:true};
+    const TOTAL_SERIES = 10;
+    let partie = null; // { current, correct, rounds: [{ok,secs,sum,user,config,sequence}] }
+
+    // ===== Canvas sizing =====
+    function sizeCanvas(){ fx.width = fx.clientWidth; fx.height = fx.clientHeight; }
+    new ResizeObserver(sizeCanvas).observe(document.querySelector('.app'));
+
+    // ===== UI labels =====
+    const updateLabels = () => { lengthVal.textContent = lengthRange.value; speedVal.textContent = speedRange.value; };
+    updateLabels(); lengthRange.addEventListener('input', updateLabels); speedRange.addEventListener('input', updateLabels);
+
+    // ===== Presets =====
+    document.querySelectorAll('.chip').forEach(c=> c.addEventListener('click',()=>{ speedRange.value = c.dataset.speed; updateLabels(); pulse(speedVal.parentElement); }));
+
+    // ===== RNG =====
+    const randDigit = () => {
+      const n = Math.floor(Math.random() * (allowZero.checked ? 10 : 9)) + (allowZero.checked ? 0 : 1);
+      return (Math.random() < 0.5 ? -1 : 1) * n;
+    };
+    function generateSequence(len){ sequence = Array.from({length: len}, randDigit); }
+
+    // ===== Countdown overlay =====
+    async function countdown(){ overlay.classList.add('show'); for(let n of [3,2,1]){ countEl.textContent = n; blip(600); await wait(550);} overlay.classList.remove('show'); }
+
+    // ===== Partie flow (10 séries) =====
+    function startPartie(){
+      partie = { current: 0, correct: 0, rounds: [], startedAt: Date.now(), config:{len:parseInt(lengthRange.value,10), speed:parseInt(speedRange.value,10), zero:allowZero.checked} };
+      scoreNow.textContent = '0';
+      startRound(true);
+    }
+
+    function startRound(withCountdown=true){
+      if(showing) return;
+      resultDiv.textContent = ''; recordFlag.classList.remove('show'); nextBtn.disabled = true;
+      i = 0; barEl.style.width = '0%';
+      const len = parseInt(lengthRange.value, 10); const speed = parseInt(speedRange.value, 10);
+      generateSequence(len); lastConfig = {len:len, speed:speed, zero:allowZero.checked};
+      startedAt = Date.now(); showing = true; digitEl.textContent = 'Go!'; digitEl.classList.add('flip'); setTimeout(()=>digitEl.classList.remove('flip'), 400);
+      const run = () => { clearInterval(timer); timer = setInterval(showNext, speed); setTimeout(showNext, Math.min(220, speed)); statsDiv.textContent = `Temps : en cours • Série : ${partie?partie.current+1:1}/${TOTAL_SERIES} (${i}/${sequence.length})`; answerInput.value=''; };
+      if(withCountdown){ countdown().then(run); } else { run(); }
+    }
+
+    function nextSeries(){
+      if(!partie) return startPartie();
+      if(partie.current+1 >= TOTAL_SERIES){ finishPartie(); return; }
+      partie.current++;
+      startRound(true);
+    }
+
+    function finishPartie(){
+      // Résumé et sauvegarde
+      const endedAt = Date.now();
+      const totalSecs = (endedAt - partie.startedAt)/1000;
+      const totalCorrect = partie.correct;
+      const avgTime = partie.rounds.length ? (partie.rounds.reduce((a,r)=>a+r.secs,0)/partie.rounds.length) : 0;
+      const entry = { ts: endedAt, totalCorrect, avgTime, totalSecs, rounds: partie.rounds, cfg: partie.config };
+      saveHistoryEntry(entry);
+      renderHistory();
+      confetti();
+      digitEl.textContent = '🏁 Fin de partie'; digitEl.classList.add('flip'); setTimeout(()=>digitEl.classList.remove('flip'), 350);
+      resultDiv.innerHTML = `🎯 Score : <strong>${totalCorrect}/${TOTAL_SERIES}</strong> • Temps moyen : <strong>${avgTime.toFixed(2)}s</strong> • Durée totale : <strong>${totalSecs.toFixed(1)}s</strong>`;
+      nextBtn.disabled = true; startBtn.textContent = 'Recommencer';
+      partie = null; // reset pour une nouvelle partie
+    }
+
+    function replay(){
+      if(partie){ // rejouer même config pour la série en cours
+        lengthRange.value = partie.config.len; speedRange.value = partie.config.speed; allowZero.checked = partie.config.zero; updateLabels(); startRound();
+      } else {
+        lengthRange.value = lastConfig.len; speedRange.value = lastConfig.speed; allowZero.checked = lastConfig.zero; updateLabels(); startPartie();
+      }
+    }
+
+    // ===== Single round helpers =====
+    function stopShowing(){ clearInterval(timer); showing = false; barEl.style.width = '100%'; }
+
+    function reset(){ stopShowing(); sequence = []; i = 0; digitEl.textContent = 'Prêt ?'; resultDiv.textContent = ''; barEl.style.width = '0%'; answerInput.value = ''; statsDiv.textContent = 'Temps : — • Série : —'; answerInput.blur(); nextBtn.disabled = true; startBtn.textContent = 'Démarrer la partie'; partie = null; }
+
+    function showNext(){
+      if(i >= sequence.length){ stopShowing(); digitEl.textContent = 'À toi !'; digitEl.classList.add('flip'); setTimeout(()=>digitEl.classList.remove('flip'), 400); answerInput.focus(); return; }
+      digitEl.textContent = sequence[i]; digitEl.classList.add('flip'); setTimeout(()=>digitEl.classList.remove('flip'), 350); i++; barEl.style.width = `${Math.round((i/sequence.length)*100)}%`; statsDiv.textContent = `Temps : en cours • Série : ${partie?partie.current+1:1}/${TOTAL_SERIES} (${i}/${sequence.length})`; if(sfxToggle.checked) blip(440); }
+
+    function validate(){
+      if(sequence.length === 0 || showing) return; // soit pas commencé, soit pas fini d'afficher
+      const user = parseInt(answerInput.value, 10);
+      const sum = sequence.reduce((a,b)=>a+b,0);
+      const secs = (Date.now()-startedAt)/1000;
+      const ok = user === sum;
+      if(ok){ successFX(); confetti(); vibrate(15); resultDiv.innerHTML = `✔️ <span class="ok">Correct</span> — <strong>${sum}</strong> en <strong>${secs.toFixed(2)}s</strong>.`; maybeSetRecord(secs); if(partie) { partie.correct++; scoreNow.textContent = String(partie.correct); } }
+      else { failFX(); vibrate(60); resultDiv.innerHTML = `❌ <span class="err">Raté</span> — Attendu <strong>${sum}</strong>. Temps <strong>${secs.toFixed(2)}s</strong>.`; }
+      statsDiv.textContent = `Temps : ${secs.toFixed(2)}s • Série : ${(partie?partie.current+1:1)}/${TOTAL_SERIES}`;
+
+      // Enregistrer le résultat de la série
+      if(partie){
+        partie.rounds[partie.current] = { ok, secs, sum, user:isNaN(user)?null:user, config:lastConfig, sequence:[...sequence] };
+        nextBtn.disabled = false; // autoriser la suivante
+      }
+    }
+
+    // ===== Records (localStorage) =====
+    function keyFor(cfg){ return `calcRush:best:${cfg.len}:${cfg.speed}:${cfg.zero?'z1':'z0'}`; }
+    function getBest(cfg){ const v = localStorage.getItem(keyFor(cfg)); return v? parseFloat(v): null; }
+    function setBest(cfg, t){ localStorage.setItem(keyFor(cfg), String(t)); }
+    function updateBestBadge(){ const best = getBest({len:parseInt(lengthRange.value,10), speed:parseInt(speedRange.value,10), zero:allowZero.checked}); bestBadge.textContent = `Record perso : ${best? best.toFixed(2)+'s' : '—'}`; }
+    function maybeSetRecord(secs){ const kcfg = lastConfig; const prev = getBest(kcfg); if(!prev || secs < prev){ setBest(kcfg, secs); recordFlag.classList.add('show'); updateBestBadge(); }}
+    updateBestBadge();
+
+    // ===== Historique persistant (parties complètes) =====
+    function loadHistory(){ try{ return JSON.parse(localStorage.getItem('calcRush:history')||'[]'); }catch(e){ return []; } }
+    function saveHistoryEntry(entry){ const all = loadHistory(); all.push(entry); localStorage.setItem('calcRush:history', JSON.stringify(all)); }
+
+    function renderHistory(){
+      const all = loadHistory();
+      // Sparkline (scores 0–10)
+      const W = spark.clientWidth || 300, H = spark.clientHeight || 40; spark.width = W; spark.height = H; sparkCtx.clearRect(0,0,W,H);
+      if(all.length){
+        const maxX = Math.max(all.length-1,1); const pad = 4; const step = (W - pad*2) / maxX; const y = v => H - pad - (v/10)*(H-pad*2);
+        sparkCtx.lineWidth = 2; sparkCtx.beginPath();
+        all.forEach((e,idx)=>{ const x = pad + idx*step; const yy = y(e.totalCorrect||0); idx? sparkCtx.lineTo(x,yy) : sparkCtx.moveTo(x,yy); });
+        sparkCtx.stroke();
+      }
+      // Liste
+      histList.innerHTML = '';
+      const recent = all.slice(-8).reverse();
+      recent.forEach(e=>{
+        const d = new Date(e.ts);
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        const sumOK = (e.rounds||[]).filter(r=>r&&r.ok).length;
+        div.innerHTML = `<div><strong>${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong><div class="small muted">len ${e?.cfg?.len} • ${e?.cfg?.speed}ms • ${e?.cfg?.zero?'0✔️':'0❌'}</div></div><div><strong>${sumOK}/10</strong><div class="small muted">avg ${Number(e.avgTime||0).toFixed(2)}s</div></div>`;
+        histList.appendChild(div);
+      });
+    }
+    renderHistory();
+
+    // ===== Micro-animations & helpers =====
+    function pulse(el){ el.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:220}); }
+    function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+    function vibrate(ms){ if('vibrate' in navigator && sfxToggle.checked) navigator.vibrate(ms); }
+
+    // Minimal beeps via WebAudio
+    let audioCtx = null; function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+    function tone(freq=440, dur=0.08, type='sine', vol=0.02){ if(!sfxToggle.checked) return; const ctx = ensureAudio(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.type = type; o.frequency.value = freq; g.gain.value = vol; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur); }
+    function blip(f=520){ tone(f,0.06,'triangle',0.03); }
+    function successFX(){ tone(880,0.08,'sine',0.03); setTimeout(()=>tone(1320,0.08,'sine',0.03),90); }
+    function failFX(){ tone(200,0.12,'sawtooth',0.025); }
+
+    // Confetti simple
+    let parts = []; function confetti(){ sizeCanvas(); const colors = ['#22d3ee','#a78bfa','#34d399','#fde047','#fb7185']; const N = 120; parts = []; for(let i=0;i<N;i++){ parts.push({x: fx.width/2, y: fx.height*0.35, vx:(Math.random()*6-3), vy:(Math.random()*-6-3), g:0.12+Math.random()*0.08, s:2+Math.random()*3, c: colors[(Math.random()*colors.length)|0], life: 60 + (Math.random()*30|0)}); } animateConfetti(); }
+    function animateConfetti(){ ctx.clearRect(0,0,fx.width,fx.height); let alive=false; parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life--; if(p.life>0){ alive=true; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s*0.6); } }); if(alive) requestAnimationFrame(animateConfetti); else ctx.clearRect(0,0,fx.width,fx.height); }
+
+    // ===== Events =====
+    startBtn.addEventListener('click', ()=>{ if(partie){ /* si déjà en partie, recommencer */ startPartie(); } else { startPartie(); } });
+    nextBtn.addEventListener('click', nextSeries);
+    replayBtn.addEventListener('click', replay);
+    resetBtn.addEventListener('click', reset);
+    validateBtn.addEventListener('click', validate);
+    answerInput.addEventListener('focus', ()=>answerInput.select());
+    [lengthRange,speedRange,allowZero].forEach(el=> el.addEventListener('change', ()=>{ updateBestBadge(); if(partie){ // si l'utilisateur change les paramètres en cours de partie, on les prend pour la suite
+      partie.config = {len:parseInt(lengthRange.value,10), speed:parseInt(speedRange.value,10), zero:allowZero.checked};
+    }}));
+
+    // ===== Keyboard =====
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === ' '){ e.preventDefault(); if(!partie) startPartie(); else if(!showing) nextSeries(); }
+      if(e.key === 'Escape') reset();
+      if(e.key === 'Enter') validate();
+    });
+
+    // Intercepter fin d'affichage pour permettre "Suivante"
+    const _origStop = stopShowing;
+    stopShowing = function(){ _origStop(); nextBtn.disabled = true; };
+    // Après validation, on réactive "Suivante" (géré dans validate)
+  </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+}
+</script>
+</body>
+</html>
